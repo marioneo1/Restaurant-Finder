@@ -7,6 +7,9 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
+import android.support.v4.app.FragmentActivity;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -29,7 +32,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private GoogleMap mMap;
 
-    private class ReverseGeoCoding extends AsyncTask<URL, Integer, String> {
+    private class RestaurantFinder extends AsyncTask<URL, Integer, String> {
         OkHttpClient client = new OkHttpClient();
 
         protected String doInBackground(URL... urls) {
@@ -51,6 +54,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         protected void onPostExecute(String result) {
             if (result != null){
+
+
+                /*
                 Gson gson = new Gson();
                 JsonObject jsonObject = gson.fromJson( result, JsonObject.class);
                 JsonArray results = jsonObject.getAsJsonArray("results");
@@ -60,6 +66,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 JsonObject location = geometery.getAsJsonObject("location");
                 LatLng actualCoordinate = new LatLng(location.get("lat").getAsDouble() , location.get("lng").getAsDouble());
                 mMap.addMarker(new MarkerOptions().position(actualCoordinate).title(formattedAddress));
+                */
+
+                Gson gson = new Gson();
+                JsonObject jsonObject = gson.fromJson( result, JsonObject.class);
+                JsonArray results = jsonObject.getAsJsonArray("results");
+                JsonObject addressObject = results.get(0).getAsJsonObject();
+                String restaurantName = addressObject.get("name").getAsString();
+                System.out.println("Restaurant name:" + restaurantName);
+                JsonObject geometry = addressObject.getAsJsonObject("geometry");
+                JsonObject location = geometry.getAsJsonObject("location");
+                JsonObject opening_hours = addressObject.getAsJsonObject("opening_hours");
+                String storeOpen = opening_hours.get("open_now").getAsString();
+                System.out.println("Store open? : " + storeOpen);
+                String rating = addressObject.get("rating").getAsString();
+                System.out.println("This restaurant has " + rating + " stars");
+                LatLng actualCoordinate = new LatLng(location.get("lat").getAsDouble() , location.get("lng").getAsDouble());
+                mMap.addMarker(new MarkerOptions().position(actualCoordinate).title(restaurantName));
+
+
             }
         }
     }
@@ -93,8 +118,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     coordinate.latitude,
                     coordinate.longitude,
                     key);
-            URL url = new URL(endpoint);
-            new ReverseGeoCoding().execute(url);
+
+            String request = MessageFormat.format(
+                    "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={0},{1}&key=AIzaSyCBmXBVHv4lLz-8C1aDChmWbrr1z0J5SjQ&rankby=distance&type=restaurant",
+                    coordinate.latitude,
+                    coordinate.longitude,
+                    key
+            );
+
+            //URL url = new URL(endpoint);
+            URL url = new URL(request);
+
+            System.out.println(endpoint);
+            System.out.println(request);
+
+            new RestaurantFinder().execute(url);
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }

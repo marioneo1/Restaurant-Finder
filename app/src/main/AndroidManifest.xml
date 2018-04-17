@@ -28,7 +28,8 @@
         -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="@string/google_maps_key" />
+            android:value="AIzaSyCBmXBVHv4lLz-8C1aDChmWbrr1z0J5SjQ" />
+        <!--https://maps.googleapis.com/maps/api/place/textsearch/xml?query=restaurants+in+Sydney&key=AIzaSyBjzjIWRfRHT6TUnk8fNB1Wl3jMoJIjTNo Key = Google Places Web Services-->
 
         <activity
             android:name=".MapsActivity"
